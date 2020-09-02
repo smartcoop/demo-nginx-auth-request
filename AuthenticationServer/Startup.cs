@@ -28,6 +28,7 @@ namespace AuthenticationServer
                     options.Cookie.HttpOnly = true;
                     options.Cookie.SecurePolicy = CookieSecurePolicy.None;
                     options.Cookie.SameSite =  SameSiteMode.Lax;
+                    options.Cookie.Path = "/";
                     options.Cookie.Name = "SimpleTalk.AuthCookieAspNetCore";
                     options.LoginPath = "/Login";
                     options.LogoutPath = "/Login/Logout";
