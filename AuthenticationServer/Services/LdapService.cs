@@ -1,5 +1,6 @@
 ﻿using System;
-using System.DirectoryServices;
+using LdapForNet;
+using LdapForNet.Native;
 using Microsoft.Extensions.Configuration;
 
 namespace AuthenticationServer.Services
@@ -11,35 +12,26 @@ namespace AuthenticationServer.Services
         {
             ActiveDirectoryPath = configRoot["AppSettings:LdapUrl"];
         }
-        public string Login(string trigram, string password)
+        public bool Login(string trigram, string password)
         {
-            string userName = null;
-            var entry = new DirectoryEntry(ActiveDirectoryPath, trigram, password);
-            var searcher = new DirectorySearcher(entry);
-            searcher.SearchScope = SearchScope.OneLevel;
-
             try
             {
-                // search for user
-                var result = searcher.FindOne();
-                if (result != null)
+                using (var cn = new LdapConnection())
                 {
-                    // get user info
-                    entry = new DirectoryEntry(ActiveDirectoryPath, trigram, password);
-                    searcher = new DirectorySearcher(entry);
-                    searcher.Filter = (Convert.ToString("(SAMAccountName=") + trigram) + ")";
-                    searcher.PropertiesToLoad.Add("givenName");
-                    result = searcher.FindOne();
-                    if (result != null)
-                    {
-                        userName = result.GetDirectoryEntry().Properties["mailNickname"].Value?.ToString();
-                    }
+                    cn.Connect(ActiveDirectoryPath, 389, Native.LdapSchema.LDAP, Native.LdapVersion.LDAP_VERSION3);
+                    cn.Bind(userDn:trigram, password:password);
+                    return true;
                 }
-            } catch
+            } catch (LdapException ex)
             {
+                Console.WriteLine("LdapException : " + ex.Message);
+                Console.WriteLine("LdapException : " + ex.ResultCode);
+                Console.WriteLine("LdapException : " + ex.StackTrace);
+                Console.WriteLine("LdapException : " + ex.InnerException);
+                // Log exception
             }
+            return false;
 
-            return userName;
         }
     }
 }

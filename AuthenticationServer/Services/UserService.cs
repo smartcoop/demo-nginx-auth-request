@@ -19,13 +19,13 @@ namespace AuthenticationServer.Services
         }
         public string Login(LoginViewModel loginViewModel)
         {
-            var username = _ldapService.Login(loginViewModel.Username, loginViewModel.Password);
-            if (string.IsNullOrEmpty(username))
+            var isLogin = _ldapService.Login(loginViewModel.Username, loginViewModel.Password);
+            if (!isLogin)
             {
-                username = _inMemoryUsers.FirstOrDefault(x => x.Key == loginViewModel.Username && x.Value == loginViewModel.Password).Key;
+                isLogin = _inMemoryUsers.Any(x => x.Key == loginViewModel.Username && x.Value == loginViewModel.Password);
             }
 
-            return username;
+            return isLogin? loginViewModel.Username : null;
         }
     }
 }
