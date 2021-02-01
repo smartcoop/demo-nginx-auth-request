@@ -20,4 +20,6 @@ WORKDIR /app
 COPY --from=publish /app/publish .
 RUN apt-get update
 RUN apt-get -y install libsasl2-modules-gssapi-mit 
+RUN apt-get -qq install krb5-user libpam-krb5
+RUN apt-get -qq clean
 ENTRYPOINT ["dotnet", "AuthenticationServer.dll"]
