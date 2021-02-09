@@ -12,6 +12,7 @@ services:
 
   authenticationserver:
     image: ${DOCKER_REGISTRY-}authenticationserver
+    hostname: dockerAuth.ubik.be
     container_name: nginx_auth_request_authenticationserver
     build:
       context: .

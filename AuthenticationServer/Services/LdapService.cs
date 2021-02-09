@@ -1,37 +1,33 @@
-﻿using System;
-using LdapForNet;
-using LdapForNet.Native;
-using Microsoft.Extensions.Configuration;
+﻿using Novell.Directory.Ldap;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
-namespace AuthenticationServer.Services
-{
-    public class LdapService
-    {
+namespace AuthenticationServer.Services {
+    public class LdapService {
         public string ActiveDirectoryPath;
-        public LdapService(IConfiguration configRoot)
-        {
-            ActiveDirectoryPath = configRoot["AppSettings:LdapUrl"];
-        }
-        public bool Login(string trigram, string password)
-        {
-            try
-            {
-                using (var cn = new LdapConnection())
-                {
-                    cn.Connect(ActiveDirectoryPath, 389, Native.LdapSchema.LDAP, Native.LdapVersion.LDAP_VERSION3);
-                    cn.Bind(userDn:trigram, password:password);
-                    return true;
+
+        public bool Login(string trigram, string password) {
+
+            string domainName = "ubik.be";
+
+            string userDn = $"{trigram}@{domainName}";
+            try {
+                using (var connection = new LdapConnection { SecureSocketLayer = false }) {
+                    connection.Connect(domainName, LdapConnection.DefaultPort);
+                    connection.Bind(userDn, password);
+
+                    if (connection.Bound) {
+                        return true;
+                    }
                 }
-            } catch (LdapException ex)
-            {
-                Console.WriteLine("LdapException : " + ex.Message);
-                Console.WriteLine("LdapException : " + ex.ResultCode);
-                Console.WriteLine("LdapException : " + ex.StackTrace);
-                Console.WriteLine("LdapException : " + ex.InnerException);
-                // Log exception
+            } catch (LdapException ex) {
+                //Console.WriteLine(ex.Message);
             }
             return false;
 
         }
+
     }
 }
