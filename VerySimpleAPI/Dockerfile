@@ -1,20 +1,19 @@
-FROM mcr.microsoft.com/dotnet/core/aspnet:3.1-buster-slim AS base
+# Build temporary build image.
+FROM mcr.microsoft.com/dotnet/core/sdk:3.1-buster AS build-env
+
 WORKDIR /app
-EXPOSE 80
 
-FROM mcr.microsoft.com/dotnet/core/sdk:3.1-buster AS build
-WORKDIR /src
-COPY ["VerySimpleAPI/VerySimpleAPI.csproj", "VerySimpleAPI/"]
-RUN dotnet restore "VerySimpleAPI/VerySimpleAPI.csproj"
-COPY . .
-WORKDIR "/src/VerySimpleAPI"
-RUN dotnet build "VerySimpleAPI.csproj" -c Release -o /app/build
+# Restore as distinct layers.
+COPY VerySimpleAPI.csproj VerySimpleAPI/VerySimpleAPI.csproj
+RUN dotnet restore VerySimpleAPI/VerySimpleAPI.csproj
 
-FROM build AS publish
-RUN dotnet publish "VerySimpleAPI.csproj" -c Release -o /app/publish
+# Copy everything else and build.
+COPY . VerySimpleAPI/
+RUN dotnet build -c Release -o out VerySimpleAPI/VerySimpleAPI.csproj
 
-FROM base AS final
+
+# Build runtime image
+FROM mcr.microsoft.com/dotnet/core/aspnet:3.1
 WORKDIR /app
-COPY --from=publish /app/publish .
-
+COPY --from=build-env /app/out .
 ENTRYPOINT ["dotnet", "VerySimpleAPI.dll"]
