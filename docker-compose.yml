@@ -6,12 +6,13 @@ services:
     container_name: nginx_auth_request_api
     build:
       context: .
-      dockerfile: Api/Dockerfile
+      dockerfile: VerySimpleAPI/Dockerfile
     networks:
       - nginx-auth-request
 
   authenticationserver:
     image: ${DOCKER_REGISTRY-}authenticationserver
+    hostname: dockerAuth.ubik.be
     container_name: nginx_auth_request_authenticationserver
     build:
       context: .
